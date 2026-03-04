@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 4%;
+    --foreground: 120 100% 70%;
+
+    --card: 220 20% 7%;
+    --card-foreground: 120 100% 70%;
+
+    --popover: 220 20% 7%;
+    --popover-foreground: 120 100% 70%;
+
+    --primary: 120 100% 50%;
+    --primary-foreground: 220 20% 4%;
+
+    --secondary: 220 15% 12%;
+    --secondary-foreground: 120 60% 80%;
+
+    --muted: 220 15% 10%;
+    --muted-foreground: 120 20% 50%;
+
+    --accent: 0 100% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 120 40% 15%;
+    --input: 120 40% 15%;
+    --ring: 120 100% 50%;
+
+    --radius: 0.25rem;
+
+    --terminal-glow: 120 100% 50%;
+    --terminal-amber: 40 100% 50%;
+    --terminal-red: 0 100% 55%;
+    --terminal-cyan: 180 100% 50%;
+    --terminal-dim: 120 20% 30%;
+
+    --sidebar-background: 220 20% 4%;
+    --sidebar-foreground: 120 100% 70%;
+    --sidebar-primary: 120 100% 50%;
+    --sidebar-primary-foreground: 220 20% 4%;
+    --sidebar-accent: 220 15% 12%;
+    --sidebar-accent-foreground: 120 60% 80%;
+    --sidebar-border: 120 40% 15%;
+    --sidebar-ring: 120 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-mono;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+/* Scanline effect */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes glitch {
+  0% { text-shadow: 2px 0 hsl(0 100% 50%), -2px 0 hsl(180 100% 50%); }
+  25% { text-shadow: -2px 0 hsl(0 100% 50%), 2px 0 hsl(180 100% 50%); }
+  50% { text-shadow: 2px 2px hsl(0 100% 50%), -2px -2px hsl(180 100% 50%); }
+  75% { text-shadow: -2px 2px hsl(0 100% 50%), 2px -2px hsl(180 100% 50%); }
+  100% { text-shadow: 2px 0 hsl(0 100% 50%), -2px 0 hsl(180 100% 50%); }
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px hsl(var(--primary) / 0.3), 0 0 10px hsl(var(--primary) / 0.1); }
+  50% { box-shadow: 0 0 10px hsl(var(--primary) / 0.5), 0 0 20px hsl(var(--primary) / 0.2); }
+}
+
+.scanline-overlay::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: hsl(var(--primary) / 0.05);
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.terminal-cursor::after {
+  content: '█';
+  animation: blink 1s step-end infinite;
+  color: hsl(var(--primary));
+}
+
+.glow-text {
+  text-shadow: 0 0 10px hsl(var(--primary) / 0.5), 0 0 20px hsl(var(--primary) / 0.3);
+}
+
+.glow-border {
+  box-shadow: 0 0 5px hsl(var(--primary) / 0.3), inset 0 0 5px hsl(var(--primary) / 0.1);
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}

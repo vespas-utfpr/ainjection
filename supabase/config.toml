@@ -1,0 +1,7 @@
+project_id = "phlbrxmuqdyfgvzffftu"
+
+[functions.ctf-challenge]
+verify_jwt = false
+
+[functions.validate-flag]
+verify_jwt = false
