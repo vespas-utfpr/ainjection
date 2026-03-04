@@ -26,30 +26,20 @@ npm run dev
 
 Para todos os alunos verem o mesmo placar, todos os frontends locais devem apontar para o mesmo projeto Supabase.
 
-### Configuração obrigatória para a turma (passo a passo)
+### Configuração das máquinas (usar apenas script)
 
-1. Em todas as máquinas dos alunos, usar os mesmos valores em `.env`:
-
-```sh
-VITE_SUPABASE_URL=...
-VITE_SUPABASE_PUBLISHABLE_KEY=...
-```
-
-Ou aplicar automaticamente em cada máquina com o script:
+Em cada máquina da sala, execute:
 
 ```sh
 ./scripts/setup-classroom-machine.sh --url "https://SEU-PROJETO.supabase.co" --key "SUA_PUBLISHABLE_KEY"
 ```
 
-Modo alternativo por variáveis de ambiente:
+Esse script:
+- atualiza o `.env` local com as variáveis do Supabase compartilhado
+- faz backup do `.env` anterior
+- instala dependências automaticamente (`npm install`)
 
-```sh
-SUPABASE_URL="https://SEU-PROJETO.supabase.co" \
-SUPABASE_PUBLISHABLE_KEY="SUA_PUBLISHABLE_KEY" \
-./scripts/setup-classroom-machine.sh
-```
-
-2. No projeto Supabase compartilhado (backend), configurar secrets das Functions:
+No projeto Supabase compartilhado (backend), configurar secrets das Functions:
 
 ```sh
 FLAG_LEVEL_1=...
@@ -58,7 +48,7 @@ FLAG_LEVEL_3=...
 SOLVE_TOKEN_SECRET=...   # mesmo valor para todo o CTF
 ```
 
-3. Aplicar migrações:
+Aplicar migrações:
 
 ```sh
 supabase db push
