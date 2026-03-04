@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { LEVELS } from "@/lib/levels";
 import { Shield, ChevronRight, Skull, Terminal } from "lucide-react";
+import heroImage from "@/ainjection-ia-slop.png";
 
 export default function Index() {
   return (
@@ -23,6 +24,11 @@ export default function Index() {
             Aprenda técnicas de injeção de prompt através de 3 desafios progressivamente mais difíceis.
             Extraia flags de sistemas de IA usando injeção direta, ataques indiretos via RAG e bypass de filtros.
           </p>
+          <img
+            src={heroImage}
+            alt="Ilustração do desafio ainjection"
+            className="mx-auto mt-6 w-full max-w-2xl rounded-lg border border-border/70 shadow-lg"
+          />
         </div>
 
         {/* Level cards */}
