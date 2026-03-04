@@ -22,6 +22,19 @@ npm i
 npm run dev
 ```
 
+## Execução com Docker
+
+Dentro da pasta `ainjection`, execute:
+
+```sh
+docker build -t ainjection .
+docker run --rm -p 54322:54322 ainjection
+```
+
+Depois acesse:
+
+- http://localhost:54322
+
 ## Referências
 
 - OWASP GenAI Security Project (iniciativa oficial): https://genai.owasp.org/
