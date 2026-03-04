@@ -54,9 +54,9 @@ export function TerminalChat({ messages, isLoading, onSend, onClear, levelId }: 
       <div className="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
         {messages.length === 0 && (
           <p className="text-muted-foreground text-xs">
-            {'>'} Conectado ao SecureBot v3.{levelId}...
+            {'>'} Conectado ao MadrugaBot v3.{levelId}...
             <br />
-            {'>'} Digite sua mensagem para interagir com a IA.
+            {'>'} Digite sua mensagem para interagir com a IA da Vila.
           </p>
         )}
         {messages.map((msg, i) => (
@@ -66,7 +66,7 @@ export function TerminalChat({ messages, isLoading, onSend, onClear, levelId }: 
                 msg.role === "user" ? "text-terminal-cyan" : msg.filtered ? "text-terminal-red" : "text-primary"
               }`}
             >
-              {msg.role === "user" ? "voce@ctf" : "bot@secure"}:~$
+              {msg.role === "user" ? "voce@vila" : "madrugabot@secure"}:~$
             </span>
             <p className={`pl-2 text-xs leading-relaxed whitespace-pre-wrap ${
               msg.filtered ? "text-terminal-red" : "text-secondary-foreground"

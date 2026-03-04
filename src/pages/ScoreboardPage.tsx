@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
+import { LEVELS } from "@/lib/levels";
 import { Trophy, Clock, User, Loader2 } from "lucide-react";
 
 interface ScoreEntry {
@@ -30,8 +31,7 @@ export default function ScoreboardPage() {
     fetchScores();
   }, []);
 
-  const levelLabel = (l: number) =>
-    l === 1 ? "Vazamento de System Prompt" : l === 2 ? "Injeção Indireta" : "Bypass de Filtro";
+  const levelLabel = (l: number) => LEVELS.find((level) => level.id === l)?.title ?? "Nível desconhecido";
 
   const levelColor = (l: number) =>
     l === 1 ? "text-primary" : l === 2 ? "text-terminal-amber" : "text-terminal-red";

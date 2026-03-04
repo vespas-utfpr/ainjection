@@ -18,11 +18,11 @@ export default function Index() {
           <h1 className="text-4xl md:text-5xl font-display font-bold glow-text leading-tight">
             Prompt Injection
             <br />
-            <span className="text-terminal-amber">Lab</span>
+            <span className="text-terminal-amber">na Vila</span>
           </h1>
           <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
-            Aprenda técnicas de injeção de prompt através de 3 desafios progressivamente mais difíceis.
-            Extraia flags de sistemas de IA usando injeção direta, ataques indiretos via RAG e bypass de filtros.
+            Explore 3 desafios progressivos inspirados no universo do Seu Madruga.
+            Extraia flags de sistemas de IA usando injeção direta, ataques indiretos via RAG e bypass de policy gate.
           </p>
           <img
             src={heroImage}
