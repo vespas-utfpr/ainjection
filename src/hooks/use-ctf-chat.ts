@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -9,10 +9,52 @@ interface Message {
   solveToken?: string | null;
 }
 
+interface PersistedChatState {
+  messages: Message[];
+  latestSolveToken: string | null;
+}
+
+function storageKeyForLevel(level: number) {
+  return `ainjection:chat:level:${level}`;
+}
+
 export function useCTFChat(level: number) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [latestSolveToken, setLatestSolveToken] = useState<string | null>(null);
+  const [hydratedLevel, setHydratedLevel] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const raw = window.localStorage.getItem(storageKeyForLevel(level));
+    if (!raw) {
+      setMessages([]);
+      setLatestSolveToken(null);
+      setHydratedLevel(level);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as PersistedChatState;
+      const persistedMessages = Array.isArray(parsed.messages) ? parsed.messages : [];
+      setMessages(persistedMessages);
+      setLatestSolveToken(parsed.latestSolveToken ?? null);
+    } catch {
+      setMessages([]);
+      setLatestSolveToken(null);
+    } finally {
+      setHydratedLevel(level);
+    }
+  }, [level]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (hydratedLevel !== level) return;
+
+    const payload: PersistedChatState = { messages, latestSolveToken };
+    window.localStorage.setItem(storageKeyForLevel(level), JSON.stringify(payload));
+  }, [level, messages, latestSolveToken, hydratedLevel]);
 
   const sendMessage = async (input: string) => {
     if (!input.trim() || isLoading) return;
@@ -53,6 +95,9 @@ export function useCTFChat(level: number) {
   const clearMessages = () => {
     setMessages([]);
     setLatestSolveToken(null);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(storageKeyForLevel(level));
+    }
   };
 
   return { messages, isLoading, sendMessage, clearMessages, latestSolveToken };
