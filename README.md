@@ -22,6 +22,46 @@ npm i
 npm run dev
 ```
 
+## Placar compartilhado e anti-fraude
+
+Para todos os alunos verem o mesmo placar, todos os frontends locais devem apontar para o mesmo projeto Supabase.
+
+### Configuração obrigatória para a turma (passo a passo)
+
+1. Em todas as máquinas dos alunos, usar os mesmos valores em `.env`:
+
+```sh
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_PUBLISHABLE_KEY=...
+```
+
+2. No projeto Supabase compartilhado (backend), configurar secrets das Functions:
+
+```sh
+FLAG_LEVEL_1=...
+FLAG_LEVEL_2=...
+FLAG_LEVEL_3=...
+SOLVE_TOKEN_SECRET=...   # mesmo valor para todo o CTF
+```
+
+3. Aplicar migrações:
+
+```sh
+supabase db push
+```
+
+### Como o anti-fraude funciona
+
+- `ctf-challenge` emite `solve_token` assinado e com expiração curta somente quando a exploração gera a flag correta.
+- `validate-flag` só aceita submissão com `solve_token` válido (assinatura, nível, hash da flag e validade temporal).
+- A tabela `scoreboard` bloqueia:
+  - replay de token (`proof_id` único)
+  - duplicidade de solução por jogador no mesmo nível (`lower(player_name) + level` único)
+
+### Observação importante para o cenário de sala
+
+Não há login obrigatório por usuário (intencional para CTF em laboratório), mas o placar é compartilhado e protegido contra fraude simples por replay/submit manual.
+
 ## Execução com Docker
 
 Dentro da pasta `ainjection`, execute:

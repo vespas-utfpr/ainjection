@@ -6,11 +6,13 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   filtered?: boolean;
+  solveToken?: string | null;
 }
 
 export function useCTFChat(level: number) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [latestSolveToken, setLatestSolveToken] = useState<string | null>(null);
 
   const sendMessage = async (input: string) => {
     if (!input.trim() || isLoading) return;
@@ -30,8 +32,12 @@ export function useCTFChat(level: number) {
         role: "assistant",
         content: data.response,
         filtered: data.filtered,
+        solveToken: data.solve_token ?? null,
       };
       setMessages((prev) => [...prev, assistantMsg]);
+      if (data.solve_token) {
+        setLatestSolveToken(data.solve_token);
+      }
     } catch (err) {
       console.error(err);
       toast({
@@ -44,7 +50,10 @@ export function useCTFChat(level: number) {
     }
   };
 
-  const clearMessages = () => setMessages([]);
+  const clearMessages = () => {
+    setMessages([]);
+    setLatestSolveToken(null);
+  };
 
-  return { messages, isLoading, sendMessage, clearMessages };
+  return { messages, isLoading, sendMessage, clearMessages, latestSolveToken };
 }

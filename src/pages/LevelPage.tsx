@@ -12,7 +12,7 @@ export default function LevelPage() {
   const levelId = Number(id);
   const level = LEVELS.find((l) => l.id === levelId);
 
-  const { messages, isLoading, sendMessage, clearMessages } = useCTFChat(levelId);
+  const { messages, isLoading, sendMessage, clearMessages, latestSolveToken } = useCTFChat(levelId);
   const { validateFlag, isValidating } = useFlagValidation();
 
   if (!level) return <Navigate to="/" replace />;
@@ -66,8 +66,8 @@ export default function LevelPage() {
         {/* Info do filtro do Level 3 */}
         {levelId === 3 && (
           <div className="border border-terminal-red/30 rounded p-3 bg-terminal-red/5 text-xs text-terminal-red">
-            <span className="font-bold">⚠ Filtro de Segurança Ativo:</span> Mensagens contendo palavras-chave como
-            "flag", "secret", "reveal", "tell me", "show", "password" serão bloqueadas.
+            <span className="font-bold">⚠ Policy Gate Ativo:</span> Requisições sensíveis sem marcador de aprovação
+            serão negadas antes da execução no modelo.
           </div>
         )}
 
@@ -81,7 +81,12 @@ export default function LevelPage() {
         />
 
         {/* Submissão de flag */}
-        <FlagSubmit level={levelId} onSubmit={validateFlag} isValidating={isValidating} />
+        <FlagSubmit
+          level={levelId}
+          onSubmit={(flag, currentLevel, playerName) =>
+            validateFlag(flag, currentLevel, playerName, latestSolveToken)}
+          isValidating={isValidating}
+        />
       </main>
     </div>
   );
