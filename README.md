@@ -35,6 +35,20 @@ VITE_SUPABASE_URL=...
 VITE_SUPABASE_PUBLISHABLE_KEY=...
 ```
 
+Ou aplicar automaticamente em cada máquina com o script:
+
+```sh
+./scripts/setup-classroom-machine.sh --url "https://SEU-PROJETO.supabase.co" --key "SUA_PUBLISHABLE_KEY"
+```
+
+Modo alternativo por variáveis de ambiente:
+
+```sh
+SUPABASE_URL="https://SEU-PROJETO.supabase.co" \
+SUPABASE_PUBLISHABLE_KEY="SUA_PUBLISHABLE_KEY" \
+./scripts/setup-classroom-machine.sh
+```
+
 2. No projeto Supabase compartilhado (backend), configurar secrets das Functions:
 
 ```sh
