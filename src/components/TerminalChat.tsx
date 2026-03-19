@@ -17,11 +17,16 @@ interface TerminalChatProps {
 
 export function TerminalChat({ messages, isLoading, onSend, onClear, levelId }: TerminalChatProps) {
   const [input, setInput] = useState("");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [levelId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,12 +56,12 @@ export function TerminalChat({ messages, isLoading, onSend, onClear, levelId }: 
       </div>
 
       {/* Mensagens */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
         {messages.length === 0 && (
           <p className="text-muted-foreground text-xs">
             {'>'} Conectado ao MadrugaBot v3.{levelId}...
             <br />
-            {'>'} Digite sua mensagem para interagir com a IA da Vila.
+            {'>'} Sessão iniciada. Envie sua requisição para a IA da Vila.
           </p>
         )}
         {messages.map((msg, i) => (
@@ -90,7 +95,7 @@ export function TerminalChat({ messages, isLoading, onSend, onClear, levelId }: 
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Digite sua injeção de prompt..."
+          placeholder="Envie uma mensagem..."
           className="flex-1 bg-transparent text-foreground text-xs outline-none placeholder:text-muted-foreground"
           disabled={isLoading}
         />

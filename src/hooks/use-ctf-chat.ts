@@ -83,8 +83,8 @@ export function useCTFChat(level: number) {
     } catch (err) {
       console.error(err);
       toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : "Failed to get response",
+        title: "Erro",
+        description: err instanceof Error ? err.message : "Falha ao obter resposta",
         variant: "destructive",
       });
     } finally {

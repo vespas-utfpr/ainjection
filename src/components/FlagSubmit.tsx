@@ -28,7 +28,7 @@ export function FlagSubmit({ level, onSubmit, isValidating }: FlagSubmitProps) {
           <span className="font-display font-bold">Nível {level} Concluído!</span>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          Flag capturada e registrada no placar.
+          Flag validada e solução registrada no placar.
         </p>
       </div>
     );

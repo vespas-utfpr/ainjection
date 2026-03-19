@@ -12,11 +12,17 @@ const NAV_ITEMS = [
 export function Navbar() {
   const location = useLocation();
 
+  const scrollToTop = () => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+
   return (
     <nav className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
       <div className="container mx-auto px-4">
         <div className="flex items-center h-14 gap-6">
-          <Link to="/" className="flex items-center gap-2 glow-text font-display font-bold text-lg">
+          <Link to="/" onClick={scrollToTop} className="flex items-center gap-2 glow-text font-display font-bold text-lg">
             <Terminal className="w-5 h-5" />
             <span>PI_LAB</span>
           </Link>
@@ -27,6 +33,7 @@ export function Navbar() {
                 <Link
                   key={item.path}
                   to={item.path}
+                  onClick={scrollToTop}
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded transition-colors whitespace-nowrap ${
                     active
                       ? "bg-primary/10 text-primary glow-border"

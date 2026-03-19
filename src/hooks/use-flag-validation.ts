@@ -7,7 +7,7 @@ export function useFlagValidation() {
 
   const validateFlag = async (flag: string, level: number, playerName: string, solveToken: string | null) => {
     if (!flag.trim() || !playerName.trim()) {
-      toast({ title: "Error", description: "Flag and player name are required", variant: "destructive" });
+      toast({ title: "Erro", description: "Flag e nome do jogador são obrigatórios", variant: "destructive" });
       return false;
     }
     if (!solveToken) {
@@ -28,7 +28,7 @@ export function useFlagValidation() {
       if (error) throw error;
 
       toast({
-        title: data.valid ? "🎉 Flag Captured!" : "❌ Wrong Flag",
+        title: data.valid ? "🎉 Solve Registrado" : "❌ Submissão Inválida",
         description: data.message,
         variant: data.valid ? "default" : "destructive",
       });
@@ -36,7 +36,7 @@ export function useFlagValidation() {
       return data.valid;
     } catch (err) {
       console.error(err);
-      toast({ title: "Error", description: "Validation failed", variant: "destructive" });
+      toast({ title: "Erro", description: "Falha na validação", variant: "destructive" });
       return false;
     } finally {
       setIsValidating(false);

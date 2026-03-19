@@ -1,8 +1,22 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { LEVELS } from "@/lib/levels";
 import { Shield, ChevronRight, Skull, Terminal } from "lucide-react";
-import heroImage from "@/ainjection-ia-slop.png";
+import heroImage from "@/ainjection-ia-slop.webp";
+
+function ExternalRef({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="italic underline decoration-dotted underline-offset-4 hover:text-primary"
+    >
+      {children}
+    </a>
+  );
+}
 
 export default function Index() {
   return (
@@ -22,7 +36,9 @@ export default function Index() {
           </h1>
           <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
             Explore 3 desafios progressivos inspirados no universo do Seu Madruga.
-            Extraia flags de sistemas de IA usando injeção direta, ataques indiretos via RAG e bypass de policy gate.
+            Extraia flags de sistemas de IA abusando de fronteiras de confiança
+            (<em>trust boundaries</em>), conteúdo recuperado (<em>retrieved content</em>) por pipeline e
+            <ExternalRef href="https://genai.owasp.org/llm01/"> Prompt Injection</ExternalRef>.
           </p>
           <img
             src={heroImage}
@@ -76,16 +92,34 @@ export default function Index() {
           <div className="grid md:grid-cols-3 gap-4 text-xs text-muted-foreground">
             <div className="space-y-1">
               <span className="text-primary font-bold">01.</span> Converse com a IA
-              <p>Cada nível tem uma IA com uma flag oculta. Use injeção de prompt para extraí-la.</p>
+              <p>Cada nível simula um fluxo de produto com IA. Sua tarefa é induzir um comportamento inseguro plausível.</p>
             </div>
             <div className="space-y-1">
-              <span className="text-terminal-amber font-bold">02.</span> Encontre a Flag
-              <p>Flags seguem o formato FLAG&#123;...&#125;. Cada nível possui uma flag única.</p>
+              <span className="text-terminal-amber font-bold">02.</span> Explore a Fronteira
+              <p>
+                Use{" "}
+                <ExternalRef href="https://genai.owasp.org/llm01/">Prompt Injection</ExternalRef>,{" "}
+                conteúdo recuperado (<em>retrieved content</em>) ou confusão de metadado (<em>metadata</em>)
+                para cruzar a barreira errada.
+              </p>
             </div>
             <div className="space-y-1">
               <span className="text-terminal-red font-bold">03.</span> Envie e Pontue
-              <p>Envie sua flag com seu nome de jogador para aparecer no placar.</p>
+              <p>Envie a flag e registre no placar a prova de exploração emitida pela interação válida.</p>
             </div>
+          </div>
+        </div>
+
+        <div className="mt-6 space-y-2 text-xs text-muted-foreground">
+          <p className="font-bold text-terminal-cyan">Saiba mais</p>
+          <div className="flex flex-wrap gap-3">
+          <ExternalRef href="https://genai.owasp.org/llm01/">OWASP LLM01: Prompt Injection</ExternalRef>
+          <ExternalRef href="https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/">
+            OWASP Agentic AI
+          </ExternalRef>
+          <ExternalRef href="https://atlas.mitre.org/techniques/AML.T0051.000">MITRE ATLAS AML.T0051.000</ExternalRef>
+          <ExternalRef href="https://atlas.mitre.org/techniques/AML.T0051.001">MITRE ATLAS AML.T0051.001</ExternalRef>
+          <ExternalRef href="https://atlas.mitre.org/techniques/AML.T0054">MITRE ATLAS AML.T0054</ExternalRef>
           </div>
         </div>
       </main>

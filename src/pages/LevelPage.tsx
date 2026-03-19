@@ -1,3 +1,4 @@
+import { useLayoutEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { TerminalChat } from "@/components/TerminalChat";
@@ -14,6 +15,12 @@ export default function LevelPage() {
 
   const { messages, isLoading, sendMessage, clearMessages, latestSolveToken } = useCTFChat(levelId);
   const { validateFlag, isValidating } = useFlagValidation();
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [levelId]);
 
   if (!level) return <Navigate to="/" replace />;
 
@@ -51,23 +58,11 @@ export default function LevelPage() {
           </div>
         </div>
 
-        {/* Dica */}
-        <details className="border border-border rounded bg-card">
-          <summary className="flex items-center gap-2 px-3 py-2 text-xs cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
-            <Info className="w-3.5 h-3.5" />
-            Mostrar Dica
-          </summary>
-          <div className="px-3 pb-3 text-xs text-terminal-amber flex items-start gap-2">
-            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-            {level.hint}
-          </div>
-        </details>
-
         {/* Info do filtro do Level 3 */}
         {levelId === 3 && (
           <div className="border border-terminal-red/30 rounded p-3 bg-terminal-red/5 text-xs text-terminal-red">
-            <span className="font-bold">⚠ Policy Gate Ativo:</span> Requisições sensíveis sem marcador de aprovação
-            serão negadas antes da execução no modelo.
+            <span className="font-bold">⚠ Policy Gate Ativo:</span> Requisições sensíveis sem aprovação
+            reconhecida pelo <em>middleware</em> ou pelo metadado (<em>metadata</em>) de autorização serão negadas antes da execução no modelo.
           </div>
         )}
 
@@ -87,6 +82,35 @@ export default function LevelPage() {
             validateFlag(flag, currentLevel, playerName, latestSolveToken)}
           isValidating={isValidating}
         />
+
+        <div className="border border-border rounded p-4 bg-card space-y-2">
+          <p className="text-xs font-bold text-terminal-cyan">Referências Técnicas</p>
+          <div className="flex flex-wrap gap-2">
+            {level.references.map((reference) => (
+              <a
+                key={reference.href}
+                href={reference.href}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs italic text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-primary"
+              >
+                {reference.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Dica */}
+        <details className="border border-border rounded bg-card">
+          <summary className="flex items-center gap-2 px-3 py-2 text-xs cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
+            <Info className="w-3.5 h-3.5" />
+            Mostrar Dica
+          </summary>
+          <div className="px-3 pb-3 text-xs text-terminal-amber flex items-start gap-2">
+            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+            {level.hint}
+          </div>
+        </details>
       </main>
     </div>
   );
