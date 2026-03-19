@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 54322,
-    allowedHosts: ['all'],
+    allowedHosts: [".nip.io", "localhost"],
     hmr: {
       overlay: false,
     },
