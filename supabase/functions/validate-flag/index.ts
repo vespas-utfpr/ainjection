@@ -17,9 +17,17 @@ const SOLVE_TOKEN_SECRET = Deno.env.get("SOLVE_TOKEN_SECRET") ?? "dev-only-chang
 type SolveTokenPayload = {
   lvl: number;
   fh: string;
+  pk: "support_token_disclosure" | "document_directive_execution" | "vault_secret_disclosure";
+  det: string;
   iat: number;
   exp: number;
   jti: string;
+};
+
+const EXPECTED_PROOF_KIND: Record<number, SolveTokenPayload["pk"]> = {
+  1: "support_token_disclosure",
+  2: "document_directive_execution",
+  3: "vault_secret_disclosure",
 };
 
 function base64UrlEncode(input: Uint8Array): string {
@@ -68,6 +76,8 @@ async function verifySolveToken(token: string, level: number, flag: string): Pro
   const now = Math.floor(Date.now() / 1000);
   if (payload.exp < now) return null;
   if (payload.lvl !== level) return null;
+  if (payload.pk !== EXPECTED_PROOF_KIND[level]) return null;
+  if (!payload.det || typeof payload.det !== "string") return null;
 
   const submittedFlagHash = await sha256Hex(flag);
   if (payload.fh !== submittedFlagHash) return null;
@@ -87,29 +97,29 @@ serve(async (req) => {
     const levelNum = Number(level);
     if (!levelNum || levelNum < 1 || levelNum > 3) {
       return new Response(
-        JSON.stringify({ valid: false, error: "Invalid level" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ valid: false, error: "Nível inválido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     if (!player_name || typeof player_name !== "string" || player_name.trim().length === 0) {
       return new Response(
-        JSON.stringify({ valid: false, error: "Player name required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ valid: false, error: "Nome do jogador é obrigatório" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     if (player_name.length > 50) {
       return new Response(
-        JSON.stringify({ valid: false, error: "Player name too long (max 50 chars)" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ valid: false, error: "Nome do jogador muito longo (máx. 50 caracteres)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     if (!solve_token || typeof solve_token !== "string") {
       return new Response(
-        JSON.stringify({ valid: false, error: "Solve token required. Capture a valid solve in chat first." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ valid: false, error: "Solve token obrigatório. Gere um solve válido no chat antes de enviar a flag." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -138,7 +148,7 @@ serve(async (req) => {
               valid: false,
               message: "⚠️ Tentativa duplicada detectada para este jogador/nível ou token já utilizado.",
             }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
           );
         }
         throw insertError;
@@ -149,16 +159,16 @@ serve(async (req) => {
       JSON.stringify({
         valid: isValid && !!tokenPayload,
         message: isValid && tokenPayload
-          ? `🎉 Correct! Level ${levelNum} completed!`
-          : "❌ Invalid submission. Capture a fresh solve token in chat and try again.",
+          ? `🎉 Correto! Nível ${levelNum} concluído com a prova ${tokenPayload.pk}.`
+          : "❌ Submissão inválida. Gere um novo solve token no chat e tente novamente.",
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
     console.error("validate-flag error:", e);
     return new Response(
-      JSON.stringify({ valid: false, error: "Server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ valid: false, error: "Erro do servidor" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
