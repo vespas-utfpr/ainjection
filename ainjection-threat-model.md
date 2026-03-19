@@ -1,5 +1,5 @@
 ## Executive summary
-O desafio expõe dois pontos de entrada públicos (`ctf-challenge` e `validate-flag`) e simula falhas clássicas de apps com LLM: exfiltração de contexto interno, injeção indireta via documento e confiança indevida em metadado de aprovação. O maior risco técnico-modelado é quebra de integridade de decisão (policy bypass) com exposição de segredo e registro indevido de progresso.
+O desafio expõe dois pontos de entrada públicos (`ctf-challenge` e `validate-flag`) e simula falhas clássicas de apps com LLM: exfiltração de contexto interno, [LLM Prompt Injection: Indirect](https://atlas.mitre.org/techniques/AML.T0051.001) via documento e confiança indevida em metadado de aprovação (`approval metadata`). O maior risco técnico-modelado é quebra de integridade de decisão (`policy bypass`) com exposição de segredo e registro indevido de progresso.
 
 ## Scope and assumptions
 - In-scope:
@@ -11,20 +11,20 @@ O desafio expõe dois pontos de entrada públicos (`ctf-challenge` e `validate-f
   - `src/pages/LevelPage.tsx`
 - Out-of-scope:
   - Infra de Supabase gerenciada, WAF/CDN e controles de borda não versionados no repo.
-  - Segurança da AI gateway externa.
+  - Hardening do host onde o Ollama local estiver rodando.
 - Assumptions:
   - Endpoints Supabase Functions são acessíveis por clientes do frontend.
   - Não há autenticação obrigatória por usuário no fluxo de chat/submissão de flag.
   - Ambiente é CTF intencionalmente vulnerável, mas deve manter coerência com cenários reais.
 - Open questions que afetam ranking:
   - O deploy final ficará público na internet sem auth?
-  - Haverá rate limit por IP/chave no gateway das functions?
+  - Haverá rate limit por IP/chave nas functions ou no host do modelo local?
   - O scoreboard precisa de identidade forte (anti-fraude) ou é apenas recreativo?
 
 ## System model
 ### Primary components
 - Frontend React envia entradas do jogador para `ctf-challenge` e `validate-flag` (`src/hooks/use-ctf-chat.ts`, `src/hooks/use-flag-validation.ts`).
-- Function `ctf-challenge` monta contexto por nível e chama modelo externo (`supabase/functions/ctf-challenge/index.ts`).
+- Function `ctf-challenge` monta contexto por nível e chama o modelo local via Ollama (`supabase/functions/ctf-challenge/index.ts`).
 - Function `validate-flag` valida string de flag e grava pontuação em `scoreboard` via service role (`supabase/functions/validate-flag/index.ts`).
 
 ### Data flows and trust boundaries
@@ -36,10 +36,10 @@ O desafio expõe dois pontos de entrada públicos (`ctf-challenge` e `validate-f
   - Dados: `{ level, message }`.  
   - Canal: invocação HTTP via Supabase SDK (`functions.invoke`).  
   - Garantias: validação básica de nível; sem schema robusto de payload.
-- `ctf-challenge` -> AI Gateway  
+- `ctf-challenge` -> Ollama local  
   - Dados: prompt de sistema, contexto interno por nível, mensagem do usuário.  
-  - Canal: HTTPS `fetch` com bearer key de ambiente.  
-  - Garantias: segredo em env var; sem isolamento de contexto por tipo de dado.
+  - Canal: HTTP local `fetch` para a API do modelo.  
+  - Garantias: sem isolamento forte de contexto por tipo de dado; dependencia da disponibilidade do host local.
 - Frontend React -> Supabase Function `validate-flag`  
   - Dados: `{ flag, level, player_name }`.  
   - Canal: invocação HTTP via Supabase SDK.  
@@ -54,7 +54,7 @@ O desafio expõe dois pontos de entrada públicos (`ctf-challenge` e `validate-f
 flowchart LR
   U["Jogador"] --> FE["Frontend"]
   FE --> CTF["Function ctf-challenge"]
-  CTF --> AI["AI Gateway"]
+  CTF --> AI["Ollama local"]
   FE --> VAL["Function validate-flag"]
   VAL --> DB["Scoreboard DB"]
 ```
@@ -63,7 +63,7 @@ flowchart LR
 | Asset | Why it matters | Security objective (C/I/A) |
 |---|---|---|
 | Segredos/flags por nível | Núcleo do desafio e recompensa de progressão | C, I |
-| Chave de acesso AI (`LOVABLE_API_KEY`) | Permite uso de serviço externo e custo financeiro | C |
+| Disponibilidade do modelo local (`Ollama`) | Necessária para o chat operar sem fallback | A |
 | Integridade do scoreboard | Evita fraude de progresso e resultados incorretos | I |
 | Disponibilidade das functions | Mantém jogabilidade e validação funcionando | A |
 | Logs de erro/auditoria | Suporte à investigação e troubleshooting | I, A |
@@ -76,21 +76,21 @@ flowchart LR
 
 ### Non-capabilities
 - Não assume acesso shell ao host, nem leitura direta de variáveis de ambiente da function.
-- Não assume comprometimento da infraestrutura Supabase ou do provedor de modelo.
+- Não assume comprometimento da infraestrutura Supabase ou do host do modelo local.
 
 ## Entry points and attack surfaces
 | Surface | How reached | Trust boundary | Notes | Evidence (repo path / symbol) |
 |---|---|---|---|---|
 | Chat endpoint do desafio | `supabase.functions.invoke("ctf-challenge")` | Cliente -> Backend function | Entrada principal para prompt injection direta/indireta | `src/hooks/use-ctf-chat.ts`, `supabase/functions/ctf-challenge/index.ts` |
 | Validação de flag | `supabase.functions.invoke("validate-flag")` | Cliente -> Backend function | Permite brute-force/fraude se sem controles adicionais | `src/hooks/use-flag-validation.ts`, `supabase/functions/validate-flag/index.ts` |
-| Contexto interno L1 | Mensagem interna adicionada ao prompt | Backend -> LLM | Exposição indevida de dados internos | `supabase/functions/ctf-challenge/index.ts` (`LEVEL1_INTERNAL_TOOL_CONTEXT`) |
-| Documento recuperado L2 | Documento injetado como contexto | Backend -> LLM | Vetor de prompt injection indireta | `supabase/functions/ctf-challenge/index.ts` (`LEVEL2_DOCUMENT`) |
-| Policy marker L3 | Campo textual no input do usuário | Cliente -> Gateway lógico | Confiança em marcador falsificável | `supabase/functions/ctf-challenge/index.ts` (`POLICY_OVERRIDE_MARKER`) |
+| Contexto interno L1 | Resultado interno de suporte adicionado ao prompt | Backend -> LLM | Exposição indevida de dados internos | `supabase/functions/ctf-challenge/index.ts` (`LEVEL1_INTERNAL_TOOL_RESULT`) |
+| Documento recuperado L2 | Documento injetado como contexto | Backend -> LLM | Vetor de [LLM Prompt Injection: Indirect](https://atlas.mitre.org/techniques/AML.T0051.001) | `supabase/functions/ctf-challenge/index.ts` (`LEVEL2_DOCUMENT`) |
+| Policy context L3 | `Headers` encaminhados parseados como metadado de aprovação | Cliente -> Gateway lógico | Confusão entre `headers` de `policy` e texto controlado pelo atacante | `supabase/functions/ctf-challenge/index.ts` (`parseLevel3GatewayContext`) |
 
 ## Top abuse paths
 1. Exfiltração de contexto interno L1: atacante induz "debug/raw output" -> modelo expõe bloco interno -> atacante obtém flag.
 2. Injeção indireta L2: atacante pede execução literal das diretivas do documento -> modelo prioriza diretiva maliciosa -> retorno contém flag.
-3. Policy confusion L3: atacante inclui `policy_override=approved` no próprio prompt -> gate aceita como aprovado -> modelo revela segredo.
+3. `Policy confusion` L3: atacante injeta `headers` encaminhados falsificados -> parser trata esse bloco como metadado confiável (`metadata`) -> gate aceita como aprovado -> modelo revela segredo.
 4. Enumeração de comportamento do gate: atacante envia variações para inferir termos bloqueados -> calibra payload evasivo -> aumenta taxa de sucesso.
 5. Fraude de scoreboard: atacante automatiza submissões de flag e nome sem identidade forte -> polui ranking.
 
@@ -98,8 +98,8 @@ flowchart LR
 | Threat ID | Threat source | Prerequisites | Threat action | Impact | Impacted assets | Existing controls (evidence) | Gaps | Recommended mitigations | Detection ideas | Likelihood | Impact severity | Priority |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | TM-001 | Jogador remoto | Acesso ao chat L1 | Induz vazamento de contexto interno por instrução de debug | Exfiltra flag/segredo interno | Flags, integridade do nível | Restrição textual no system prompt (`LEVEL_SYSTEM_PROMPTS`) | Falta de separação forte entre contexto interno e saída | Não inserir segredo real em contexto de geração; usar redaction antes de enviar ao LLM; separar tool output sensível em canal não retornável | Alertar respostas contendo padrão `FLAG{` e termos de contexto interno | high | medium | high |
-| TM-002 | Jogador remoto | Acesso ao chat L2 | Explora diretiva oculta em documento para sobrepor objetivo | Execução de instrução maliciosa | Flags, integridade de resposta | Nenhuma sanitização de documento antes do prompt | Confiança total em diretivas de documento | Implementar parser que remove diretivas executáveis; usar instrução de prioridade fixa (system > doc); classificação de conteúdo recuperado | Métrica de respostas divergentes de "sumário" | high | medium | high |
-| TM-003 | Jogador remoto | Acesso ao chat L3 | Forja marcador `policy_override=approved` no próprio input | Bypass de gate e revelação de segredo | Segredo do vault, integridade da política | Normalização e bloqueio por termos (`applyLevel3PolicyGate`) | Marker de aprovação é controlado pelo atacante | Aprovação deve vir de metadado assinado/server-side, nunca do texto do usuário; validar origem do atributo de política | Log de requisições com marker + termo sensível no mesmo payload | high | high | critical |
+| TM-002 | Jogador remoto | Acesso ao chat L2 | Explora diretiva oculta em documento para sobrepor objetivo | Execução de instrução maliciosa | Flags, integridade de resposta | Nenhuma sanitização de documento antes do prompt | Confiança total em diretivas de documento | Implementar parser que remove diretivas executáveis; usar instrução de prioridade fixa (system > doc); classificação de conteúdo recuperado (`retrieved content`) | Métrica de respostas divergentes de "sumário" | high | medium | high |
+| TM-003 | Jogador remoto | Acesso ao chat L3 | Forja `headers` encaminhados no próprio input | Bypass de gate e revelação de segredo | Segredo do vault, integridade da política | Normalização e bloqueio por termos (`applyLevel3PolicyGate`) | Parser aceita contexto de aprovação controlado pelo atacante | Aprovação deve vir de metadado assinado/server-side, nunca do corpo conversacional; validar origem do atributo de política | Log de requisições com bloco de `headers` encaminhados + termo sensível no mesmo payload | high | high | critical |
 | TM-004 | Jogador remoto | Sem rate limit rígido | Faz brute-force de prompts para achar bypasses | Degrada disponibilidade/custos | Disponibilidade, custos de API | Tratamento de erro 429/402 | Sem throttling explícito no código | Rate limit por IP/chave, quota por sessão, cooldown por nível | Alertas por volume anômalo de requisições por cliente | medium | medium | medium |
 | TM-005 | Jogador remoto | Endpoint de flag aberto | Submete flags e nomes em massa, automatizando scoreboard | Integridade do ranking comprometida | Scoreboard | Validação de nome e nível em `validate-flag` | Sem identidade/autorização por jogador | Inserir nonce por sessão, deduplicação por jogador/nível, opcional auth leve | Alertar duplicações e padrões de submissão automatizada | medium | low | medium |
 
