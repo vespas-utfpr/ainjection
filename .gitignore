@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Artefatos locais de automação e Supabase
+.playwright-cli/
+supabase/.branches/
+supabase/.temp/
