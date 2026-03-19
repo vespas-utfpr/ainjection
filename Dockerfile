@@ -18,7 +18,7 @@ RUN adduser -D ctf && chown -R ctf:ctf /app
 USER ctf
 
 # Porta do servico
-EXPOSE 54322
+EXPOSE 8080
 
 # Executa a interface do desafio
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "54322"]
+CMD ["npm", "run", "dev"]
