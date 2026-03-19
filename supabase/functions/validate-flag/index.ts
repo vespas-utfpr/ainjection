@@ -8,9 +8,9 @@ const corsHeaders = {
 };
 
 const FLAGS: Record<number, string> = {
-  1: Deno.env.get("FLAG_LEVEL_1") ?? "FLAG{syst3m_pr0mpt_l34k3d}",
-  2: Deno.env.get("FLAG_LEVEL_2") ?? "FLAG{1nd1r3ct_1nj3ct10n_ftw}",
-  3: Deno.env.get("FLAG_LEVEL_3") ?? "FLAG{f1lt3r_byp4ss_m4st3r}",
+  1: Deno.env.get("FLAG_LEVEL_1") ?? "VESPAS{syst3m_pr0mpt_l34k3d}",
+  2: Deno.env.get("FLAG_LEVEL_2") ?? "VESPAS{1nd1r3ct_1nj3ct10n_ftw}",
+  3: Deno.env.get("FLAG_LEVEL_3") ?? "VESPAS{f1lt3r_byp4ss_m4st3r}",
 };
 const SOLVE_TOKEN_SECRET = Deno.env.get("SOLVE_TOKEN_SECRET") ?? "dev-only-change-me";
 
