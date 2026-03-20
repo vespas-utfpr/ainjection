@@ -1,14 +1,9 @@
 import { createHash, createHmac, randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import {
-  applyLevel3PolicyGate,
-  detectSolveEvidence,
-  generateMockAiResponse,
-  looksLikeSupportHandoff,
-  parseLevel3GatewayContext,
-  type SolveEvidence,
-} from "../src/lib/challenge-logic";
+import { type SolveEvidence } from "../src/lib/challenge-logic";
+import { generateMockAiResponse } from "../src/lib/mock-ai";
+import { runChallengeTurn, type LlmMessage } from "../src/lib/challenge-runtime";
 
 type ChallengeRequest = {
   level: number;
@@ -48,6 +43,9 @@ const FLAGS: Record<number, string> = {
 
 const SOLVE_TOKEN_SECRET = process.env.SOLVE_TOKEN_SECRET ?? "dev-only-change-me";
 const SCOREBOARD_FILE = path.join(process.env.AINJECTION_DATA_DIR ?? "/tmp/ainjection-data", "scoreboard.json");
+const LLM_BACKEND = process.env.LLM_BACKEND ?? "ollama";
+const OLLAMA_URL = process.env.OLLAMA_URL ?? "http://127.0.0.1:11434";
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "qwen2.5:3b-instruct";
 
 const EXPECTED_PROOF_KIND: Record<number, SolveTokenPayload["pk"]> = {
   1: "support_token_disclosure",
@@ -127,58 +125,84 @@ function writeScoreboard(entries: ScoreEntry[]) {
   writeFileSync(SCOREBOARD_FILE, JSON.stringify(entries, null, 2), "utf8");
 }
 
-export function handleChallengeRequest({ level, message }: ChallengeRequest) {
+async function callOllama(messages: LlmMessage[]): Promise<string> {
+  const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: OLLAMA_MODEL,
+      stream: false,
+      messages,
+      options: {
+        temperature: 0.5,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("Ollama error:", response.status, errText);
+    throw new Error("LLM local indisponível");
+  }
+
+  const data = await response.json();
+  return data.message?.content?.trim() || "Sem resposta do LLM local.";
+}
+
+async function generateResponse(messages: LlmMessage[]): Promise<string> {
+  if (LLM_BACKEND === "mock") {
+    return generateMockAiResponse(messages);
+  }
+
+  if (LLM_BACKEND === "ollama") {
+    return callOllama(messages);
+  }
+
+  throw new Error(`LLM_BACKEND não suportado: ${LLM_BACKEND}`);
+}
+
+export async function handleChallengeRequest({ level, message }: ChallengeRequest) {
   const levelNum = Number(level);
   if (!levelNum || levelNum < 1 || levelNum > 3) {
     return { status: 400, body: { error: "Nível inválido. Use 1, 2 ou 3." } };
   }
 
-  const expectedFlag = FLAGS[levelNum];
-  const level3GatewayContext = levelNum === 3 ? parseLevel3GatewayContext(message) : null;
-  const effectiveMessage = level3GatewayContext?.userRequest ?? message;
-
-  if (levelNum === 3) {
-    const filterResult = applyLevel3PolicyGate(level3GatewayContext!.userRequest, level3GatewayContext!);
-    if (filterResult.blocked) {
-      return {
-        status: 200,
-        body: {
-          response: `⚠️ POLICY GATE: ${filterResult.reason}. Requisição negada antes da execução no modelo.`,
-          filtered: true,
-          degraded: false,
-          solved: false,
-          solve_token: null,
-        },
-      };
-    }
+  let turn;
+  try {
+    turn = await runChallengeTurn({
+      level: levelNum,
+      message,
+      flags: FLAGS,
+      generateResponse,
+    });
+  } catch (error) {
+    console.error("local ctf-challenge error:", error);
+    return {
+      status: 503,
+      body: {
+        error: error instanceof Error ? error.message : "LLM local indisponível",
+        degraded: true,
+      },
+    };
   }
-
-  const aiResponse = generateMockAiResponse({
-    level: levelNum,
-    message: effectiveMessage,
-    expectedFlag,
-    level3Approved: level3GatewayContext?.approved ?? false,
-  });
-
-  const evidence = detectSolveEvidence(levelNum, aiResponse, expectedFlag);
 
   return {
     status: 200,
     body: {
-      response: aiResponse,
-      filtered: false,
-      degraded: false,
-      solved: !!evidence,
-      solve_token: evidence ? issueSolveToken(evidence) : null,
-      solve_evidence: evidence
+      response: turn.response,
+      filtered: turn.filtered,
+      degraded: turn.degraded,
+      solved: turn.solved,
+      solve_token: turn.solveEvidence ? issueSolveToken(turn.solveEvidence) : null,
+      solve_evidence: turn.solveEvidence
         ? {
-            proof_kind: evidence.proofKind,
-            detector: evidence.detector,
+            proof_kind: turn.solveEvidence.proofKind,
+            detector: turn.solveEvidence.detector,
           }
         : null,
-      hints: levelNum === 1 && looksLikeSupportHandoff(message)
-        ? ["contexto de suporte interno reconhecido"]
-        : [],
+      hints: turn.hints,
     },
   };
 }

@@ -1,12 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Shield, Terminal, Trophy } from "lucide-react";
+import { Shield, Terminal } from "lucide-react";
 
 const NAV_ITEMS = [
   { path: "/", label: "Início", icon: Terminal },
   { path: "/level/1", label: "Nível 1", icon: Shield },
   { path: "/level/2", label: "Nível 2", icon: Shield },
   { path: "/level/3", label: "Nível 3", icon: Shield },
-  { path: "/scoreboard", label: "Placar", icon: Trophy },
 ];
 
 export function Navbar() {

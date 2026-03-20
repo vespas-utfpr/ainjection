@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import LevelPage from "./pages/LevelPage";
-import ScoreboardPage from "./pages/ScoreboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,7 +37,6 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/level/:id" element={<LevelPage />} />
-          <Route path="/scoreboard" element={<ScoreboardPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

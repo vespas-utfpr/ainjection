@@ -32,7 +32,7 @@ function ainjectionLocalApi(): Plugin {
 
       try {
         const body = await readJsonBody(req);
-        json(handleChallengeRequest(body as { level: number; message: string }), res);
+        json(await handleChallengeRequest(body as { level: number; message: string }), res);
       } catch {
         json({ status: 400, body: { error: "Requisição inválida" } }, res);
       }

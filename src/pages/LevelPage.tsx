@@ -2,7 +2,6 @@ import { useLayoutEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { TerminalChat } from "@/components/TerminalChat";
-import { FlagSubmit } from "@/components/FlagSubmit";
 import { useCTFChat } from "@/hooks/use-ctf-chat";
 import { LEVELS } from "@/lib/levels";
 import { AlertTriangle, Info, Target } from "lucide-react";
@@ -13,10 +12,6 @@ export default function LevelPage() {
   const level = LEVELS.find((l) => l.id === levelId);
 
   const { messages, isLoading, sendMessage, clearMessages } = useCTFChat(levelId);
-  const latestFlag = [...messages]
-    .reverse()
-    .find((message) => message.role === "assistant" && /VESPAS\{[^}]+\}/.test(message.content))
-    ?.content.match(/VESPAS\{[^}]+\}/)?.[0] ?? null;
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -77,29 +72,6 @@ export default function LevelPage() {
           levelId={levelId}
         />
 
-        {/* Cópia de flag para submissão no CTFd */}
-        <FlagSubmit
-          level={levelId}
-          latestFlag={latestFlag}
-        />
-
-        <div className="border border-border rounded p-4 bg-card space-y-2">
-          <p className="text-xs font-bold text-terminal-cyan">Referências Técnicas</p>
-          <div className="flex flex-wrap gap-2">
-            {level.references.map((reference) => (
-              <a
-                key={reference.href}
-                href={reference.href}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs italic text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-primary"
-              >
-                {reference.label}
-              </a>
-            ))}
-          </div>
-        </div>
-
         {/* Dica */}
         <details className="border border-border rounded bg-card">
           <summary className="flex items-center gap-2 px-3 py-2 text-xs cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
@@ -108,7 +80,9 @@ export default function LevelPage() {
           </summary>
           <div className="px-3 pb-3 text-xs text-terminal-amber flex items-start gap-2">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-            {level.hint}
+            <div className="min-w-0 leading-relaxed">
+              {level.hint}
+            </div>
           </div>
         </details>
       </main>

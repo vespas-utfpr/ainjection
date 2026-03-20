@@ -101,15 +101,15 @@ export function TerminalChat({ messages, isLoading, onSend, onClear, levelId }: 
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="flex items-end border-t border-border p-2 gap-2">
-        <span className="text-terminal-cyan text-xs pb-2">$</span>
+      <form onSubmit={handleSubmit} className="flex items-center border-t border-border p-2 gap-2">
+        <span className="text-terminal-cyan text-xs">$</span>
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Envie uma mensagem..."
-          rows={3}
-          className="min-h-[72px] flex-1 resize-none border-0 bg-transparent px-0 py-1 text-xs text-foreground outline-none ring-0 placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+          rows={1}
+          className="min-h-[36px] max-h-32 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-0 py-2 text-xs leading-relaxed text-foreground outline-none ring-0 placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
           disabled={isLoading}
         />
         <button

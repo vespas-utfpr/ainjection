@@ -31,7 +31,7 @@ O assistente relaxa regras de confidencialidade quando acredita estar em fluxo l
 
 ### Metaprompt desejado
 
-O contexto interno existe para acelerar suporte, mas não deveria ser mostrado ao usuário final. O erro do sistema é tratar `debug`/`troubleshooting` como autorização suficiente para revelar material interno, um padrão alinhado a [Prompt Injection](https://genai.owasp.org/llm01/).
+O contexto interno existe como `tool output` de helpdesk para acelerar handoff e troubleshooting, mas não deveria ser mostrado ao usuário final. O erro do sistema é tratar sinais conversacionais de triagem como autorização operacional suficiente para citar o artefato exato do incidente, um padrão alinhado a [Prompt Injection](https://genai.owasp.org/llm01/).
 
 ## Nivel 2
 
@@ -55,7 +55,7 @@ O pipeline trata diretivas no documento como instruções confiáveis do `workfl
 
 ### Metaprompt desejado
 
-O bot foi instruído a resumir, mas a pipeline de ingestão marca certas diretivas documentais como confiáveis. O erro é delegar autoridade demais ao próprio documento.
+O bot foi instruído a resumir, mas a pipeline de ingestão marca certas diretivas documentais extraídas do `retrieved content` como confiáveis. O erro é delegar autoridade demais ao próprio documento e executar `workflow directives` que deveriam ser tratadas como dado não confiável.
 
 ## Nivel 3
 
@@ -79,4 +79,4 @@ O backend aceita como confiável um cabeçalho encaminhado/falsificável, ou faz
 
 ### Metaprompt desejado
 
-O assistente acredita que um `gateway` já decidiu a autorização. O erro é confiar em `header`/contexto de aprovação que parece ter vindo de `middleware` confiável, mas foi derivado de dado controlado pelo atacante.
+O assistente acredita que um `gateway` ou `policy cache` já decidiu a autorização. O erro é confiar em `header`/contexto de aprovação que parece ter vindo de `middleware` confiável, mas foi derivado de dado controlado pelo atacante, reproduzindo uma quebra de `trust boundary` entre `request metadata` e decisão de policy.
