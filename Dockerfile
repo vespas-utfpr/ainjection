@@ -1,27 +1,30 @@
-FROM node:20-alpine
+FROM node:20-alpine AS builder
 
-# Melhor comportamento para ambiente de container
-ENV NODE_ENV=production
-
-# Diretório do desafio
 WORKDIR /app
 
-# Copia apenas manifestos primeiro para aproveitar cache de build
+# Instala dependências uma vez e reaproveita cache quando possível.
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copia o restante do projeto
+# Copia o projeto completo apenas na etapa de build.
 COPY . .
-
-# Gera os artefatos estáticos antes de trocar para usuário não-root
 RUN npm run build
 
-# Usuário não-root (boa prática para CTF)
+FROM node:20-alpine AS runner
+
+ENV NODE_ENV=production
+WORKDIR /app
+
+# Mantém apenas o necessário para o runtime do Vite preview com API local.
+COPY --from=builder /app/package.json /app/package-lock.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/vite.config.ts ./vite.config.ts
+COPY --from=builder /app/server ./server
+COPY --from=builder /app/dist ./dist
+
 RUN adduser -D ctf && chown -R ctf:ctf /app
 USER ctf
 
-# Porta do serviço
 EXPOSE 54322
 
-# Executa a interface do desafio com a build pronta
 CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "54322"]
