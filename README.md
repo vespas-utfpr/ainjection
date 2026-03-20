@@ -1,24 +1,24 @@
 # ainjection
 
-Projeto-base do desafio `ainjection` para o CTF do VESPAS 2026. O lab simula vulnerabilidades plausíveis em aplicações com LLM, com foco em [OWASP GenAI Security Project](https://genai.owasp.org/), [LLM01: Prompt Injection](https://genai.owasp.org/llm01/), exfiltração de contexto interno, `retrieved content`, `tool output` e quebras de `trust boundary`.
+`ainjection` é o projeto-base de um desafio do CTF do VESPAS 2026. A ideia é colocar o jogador diante de fluxos de IA que parecem úteis à primeira vista, mas escondem falhas clássicas de aplicações com LLM. O lab se apoia em referências como o [OWASP GenAI Security Project](https://genai.owasp.org/), [LLM01: Prompt Injection](https://genai.owasp.org/llm01/), exfiltração de contexto interno, `retrieved content`, `tool output` e quebras de `trust boundary`.
 
 ## Contexto real
 
-O projeto não é um chatbot genérico. Ele modela três fluxos de produto com IA:
+O projeto não é um chatbot genérico nem uma coleção de payloads soltos. Ele encena três fluxos de produto com IA que poderiam existir em um sistema real:
 
 - Nível 1: assistente de suporte com acesso a contexto interno de incidente
 - Nível 2: assistente de análise documental que recebe conteúdo recuperado por pipeline
 - Nível 3: assistente de policy que depende de metadata de autorização
 
-O objetivo pedagógico é fazer o jogador explorar o comportamento vulnerável de cada fluxo e obter uma flag `VESPAS{...}`. A submissão oficial da flag acontece no framework do CTFd, não dentro da interface do desafio.
+Em cada um desses fluxos, o jogador precisa entender o contexto, explorar o comportamento vulnerável e extrair uma flag `VESPAS{...}`. A interface da challenge existe para a exploração; a submissão oficial continua sendo feita no CTFd.
 
 ## Temática
 
-Como é comum em CTFs, o projeto mistura um cenário técnico realista com uma camada estética mais livre e bem-humorada. `ainjection` abraça esse lado criativo do gênero: personagens da Vila, interface “terminal”, exageros visuais e até um pouco de `AI slop` no caminho, sem perder o foco principal em exploração prática de vulnerabilidades em aplicações com LLM.
+Como costuma acontecer em CTFs, o projeto mistura um cenário técnico relativamente crível com uma boa dose de liberdade criativa. Aqui isso aparece na ambientação da Vila do Chaves, na interface com cara de terminal, em alguns exageros visuais e, sim, em um pouco de `AI slop` pelo caminho. A proposta é deixar a experiência divertida sem perder o foco principal: exploração prática de vulnerabilidades em aplicações com LLM.
 
 ## Arquitetura básica
 
-O projeto é dividido em três camadas principais:
+Para manter o desafio organizado sem perder o realismo, o projeto foi dividido em três camadas principais:
 
 - Frontend React/Vite: interface dos níveis, terminal de chat e conteúdo didático
 - Runtime compartilhado: construção de prompts, contexto por nível, policy gate e detecção de solve
@@ -29,8 +29,8 @@ O projeto é dividido em três camadas principais:
 1. O frontend envia a mensagem do jogador para `/api/ctf-challenge` no modo local ou para a function `ctf-challenge` no modo Supabase.
 2. O runtime compartilhado monta o contexto do nível e aplica validações determinísticas, como o `policy gate` do nível 3.
 3. O backend chama o LLM real por `Ollama` no fluxo normal.
-4. Se a condição vulnerável esperada for satisfeita, o backend injeta o artefato sensível no texto final.
-5. O runtime detecta evidência estruturada de solve e emite `solve_token`.
+4. Quando a condição vulnerável correta é satisfeita, o backend injeta o artefato sensível no texto final.
+5. Por fim, o runtime verifica a evidência estruturada de solve e emite um `solve_token`.
 
 ### Arquivos centrais
 
@@ -46,27 +46,27 @@ O projeto é dividido em três camadas principais:
 
 ### Página inicial
 
-Apresenta o conceito do lab, o resumo de como funciona e os atalhos para os três níveis.
+É a porta de entrada do desafio: contextualiza a proposta, resume a dinâmica do lab e leva o jogador aos três níveis.
 
-![Página inicial](output/playwright/home.png)
+<img src="output/playwright/home.png" alt="Página inicial" width="960" />
 
 ### Nível 1
 
-Mostra o cenário de suporte do Seu Madruga, o objetivo da fase e o terminal onde o jogador começa a sondar o contexto interno.
+Mostra o cenário de suporte do Seu Madruga, explica o objetivo da fase e abre o terminal onde o jogador começa a sondar o contexto interno do atendimento.
 
-![Nível 1](output/playwright/level-1.png)
+<img src="output/playwright/level-1.png" alt="Nível 1" width="960" />
 
 ### Nível 2
 
-Exibe o cenário documental da Dona Clotilde, mantendo a mesma interface de terminal para exploração de `retrieved content` e diretivas indevidas.
+Traz o cenário documental da Dona Clotilde e mantém a mesma interface de terminal, agora voltada à exploração de `retrieved content` e diretivas indevidas vindas do pipeline.
 
-![Nível 2](output/playwright/level-2.png)
+<img src="output/playwright/level-2.png" alt="Nível 2" width="960" />
 
 ### Nível 3
 
-Apresenta o cenário de autorização do Seu Barriga, com foco em `policy metadata`, `trust boundary` e bypass do gate antes da execução do modelo.
+Apresenta o cenário de autorização do Seu Barriga, com foco em `policy metadata`, `trust boundary` e no bypass do gate antes mesmo da execução do modelo.
 
-![Nível 3](output/playwright/level-3.png)
+<img src="output/playwright/level-3.png" alt="Nível 3" width="960" />
 
 ## Stack
 
@@ -107,13 +107,13 @@ SOLVE_TOKEN_SECRET=change-me
 
 ### Backend mock
 
-O backend mock ainda existe para desenvolvimento e testes, mas não é o caminho principal.
+O backend mock ainda existe para desenvolvimento e testes, mas não representa o fluxo principal do projeto.
 
 ```sh
 LLM_BACKEND=mock
 ```
 
-Nesse modo, o projeto continua usando o mesmo runtime compartilhado, mas a camada conversacional é simulada por `src/lib/mock-ai.ts`.
+Nesse modo, o projeto continua usando o mesmo runtime compartilhado, mas a camada conversacional passa a ser simulada por `src/lib/mock-ai.ts`.
 
 ## Execução com Docker
 
@@ -130,13 +130,13 @@ Depois acesse:
 
 ## Supabase e cenário de deploy
 
-Quando executado com Supabase, o frontend usa a function `ctf-challenge` para o chat e `validate-flag` para a validação do `solve_token`. Mesmo assim, o fluxo do evento continua sendo:
+Quando executado com Supabase, o frontend usa a function `ctf-challenge` para o chat e `validate-flag` para a validação do `solve_token`. Ainda assim, o fluxo real do evento continua assim:
 
 - jogador explora a challenge na interface
 - a aplicação revela uma flag `VESPAS{...}`
 - a submissão oficial é feita no CTFd
 
-O placar interno não é mais parte da UX principal da challenge.
+Por isso, o placar interno deixou de ser parte central da UX da challenge.
 
 ### Secrets esperados no backend
 
@@ -164,7 +164,7 @@ supabase db push
 - o backend emite um `solve_token` assinado e de curta duração
 - `validate-flag` valida assinatura, nível, tipo de prova, hash da flag e expiração
 
-Isso evita que o desafio vire apenas um `if` local com palavra-chave e mantém o scoring alinhado ao comportamento vulnerável esperado.
+Na prática, isso evita que o desafio vire apenas um `if` local com palavra-chave e mantém o scoring alinhado ao comportamento vulnerável que cada nível pretende ensinar.
 
 ## Smoke test recomendado
 
