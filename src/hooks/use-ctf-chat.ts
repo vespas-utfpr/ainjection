@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { postJson } from "@/lib/runtime-api";
 
 interface Message {
   role: "user" | "assistant";
@@ -13,6 +13,12 @@ interface PersistedChatState {
   messages: Message[];
   latestSolveToken: string | null;
 }
+
+type ChallengeResponse = {
+  response: string;
+  filtered: boolean;
+  solve_token: string | null;
+};
 
 function storageKeyForLevel(level: number) {
   return `ainjection:chat:level:${level}`;
@@ -64,12 +70,10 @@ export function useCTFChat(level: number) {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("ctf-challenge", {
-        body: { level, message: input.trim() },
+      const data = await postJson<ChallengeResponse>("/api/ctf-challenge", {
+        level,
+        message: input.trim(),
       });
-
-      if (error) throw error;
-
       const assistantMsg: Message = {
         role: "assistant",
         content: data.response,

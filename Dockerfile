@@ -1,9 +1,9 @@
 FROM node:20-alpine
 
 # Melhor comportamento para ambiente de container
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 
-# Diretorio do desafio
+# Diretório do desafio
 WORKDIR /app
 
 # Copia apenas manifestos primeiro para aproveitar cache de build
@@ -13,12 +13,15 @@ RUN npm ci
 # Copia o restante do projeto
 COPY . .
 
-# Usuario nao-root (boa pratica para CTF)
+# Gera os artefatos estáticos antes de trocar para usuário não-root
+RUN npm run build
+
+# Usuário não-root (boa prática para CTF)
 RUN adduser -D ctf && chown -R ctf:ctf /app
 USER ctf
 
-# Porta do servico
+# Porta do serviço
 EXPOSE 54322
 
-# Executa a interface do desafio
-CMD ["npm", "run", "dev"]
+# Executa a interface do desafio com a build pronta
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "54322"]

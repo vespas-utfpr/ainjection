@@ -1,6 +1,11 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { postJson } from "@/lib/runtime-api";
+
+type ValidateFlagResponse = {
+  valid: boolean;
+  message: string;
+};
 
 export function useFlagValidation() {
   const [isValidating, setIsValidating] = useState(false);
@@ -21,11 +26,12 @@ export function useFlagValidation() {
 
     setIsValidating(true);
     try {
-      const { data, error } = await supabase.functions.invoke("validate-flag", {
-        body: { flag: flag.trim(), level, player_name: playerName.trim(), solve_token: solveToken },
+      const data = await postJson<ValidateFlagResponse>("/api/validate-flag", {
+        flag: flag.trim(),
+        level,
+        player_name: playerName.trim(),
+        solve_token: solveToken,
       });
-
-      if (error) throw error;
 
       toast({
         title: data.valid ? "🎉 Solve Registrado" : "❌ Submissão Inválida",

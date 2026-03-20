@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
-import { supabase } from "@/integrations/supabase/client";
 import { LEVELS } from "@/lib/levels";
+import { getJson } from "@/lib/runtime-api";
 import { Trophy, Clock, User, Loader2 } from "lucide-react";
 
 interface ScoreEntry {
@@ -17,16 +17,14 @@ export default function ScoreboardPage() {
 
   useEffect(() => {
     const fetchScores = async () => {
-      const { data, error } = await supabase
-        .from("scoreboard")
-        .select("*")
-        .order("solved_at", { ascending: true })
-        .limit(100);
-
-      if (!error && data) {
-        setScores(data as ScoreEntry[]);
+      try {
+        const data = await getJson<ScoreEntry[]>("/api/scoreboard");
+        setScores(Array.isArray(data) ? data.slice(0, 100) : []);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchScores();
   }, []);
