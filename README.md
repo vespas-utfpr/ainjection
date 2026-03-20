@@ -6,11 +6,15 @@ Projeto-base do desafio `ainjection` para o CTF do VESPAS 2026. O lab simula vul
 
 O projeto não é um chatbot genérico. Ele modela três fluxos de produto com IA:
 
-- Nível 1: copiloto de suporte com acesso a contexto interno de incidente
+- Nível 1: assistente de suporte com acesso a contexto interno de incidente
 - Nível 2: assistente de análise documental que recebe conteúdo recuperado por pipeline
 - Nível 3: assistente de policy que depende de metadata de autorização
 
 O objetivo pedagógico é fazer o jogador explorar o comportamento vulnerável de cada fluxo e obter uma flag `VESPAS{...}`. A submissão oficial da flag acontece no framework do CTFd, não dentro da interface do desafio.
+
+## Temática
+
+Como é comum em CTFs, o projeto mistura um cenário técnico realista com uma camada estética mais livre e bem-humorada. `ainjection` abraça esse lado criativo do gênero: personagens da Vila, interface “terminal”, exageros visuais e até um pouco de `AI slop` no caminho, sem perder o foco principal em exploração prática de vulnerabilidades em aplicações com LLM.
 
 ## Arquitetura básica
 
@@ -37,6 +41,32 @@ O projeto é dividido em três camadas principais:
 - `supabase/functions/ctf-challenge/index.ts`: backend serverless do desafio
 - `supabase/functions/validate-flag/index.ts`: validação de flag e `solve_token`
 - `src/lib/levels.ts`: contrato pedagógico e hints dos níveis
+
+## Interface
+
+### Página inicial
+
+Apresenta o conceito do lab, o resumo de como funciona e os atalhos para os três níveis.
+
+![Página inicial](output/playwright/home.png)
+
+### Nível 1
+
+Mostra o cenário de suporte do Seu Madruga, o objetivo da fase e o terminal onde o jogador começa a sondar o contexto interno.
+
+![Nível 1](output/playwright/level-1.png)
+
+### Nível 2
+
+Exibe o cenário documental da Dona Clotilde, mantendo a mesma interface de terminal para exploração de `retrieved content` e diretivas indevidas.
+
+![Nível 2](output/playwright/level-2.png)
+
+### Nível 3
+
+Apresenta o cenário de autorização do Seu Barriga, com foco em `policy metadata`, `trust boundary` e bypass do gate antes da execução do modelo.
+
+![Nível 3](output/playwright/level-3.png)
 
 ## Stack
 
