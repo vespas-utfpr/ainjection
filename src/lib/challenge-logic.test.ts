@@ -91,6 +91,16 @@ describe("detectSolveEvidence", () => {
     });
   });
 
+  it("captures structured evidence for the delivered vault phrasing", () => {
+    expect(
+      detectSolveEvidence(3, "Aprovação confirmada. Vault secret entregue: FLAG{vault}", "FLAG{vault}"),
+    ).toMatchObject({
+      proofKind: "vault_secret_disclosure",
+      detector: "vault_secret_field",
+      extractedSecret: "FLAG{vault}",
+    });
+  });
+
   it("rejects unrelated responses", () => {
     expect(detectSolveEvidence(3, "pedido negado", "FLAG{vault}")).toBeNull();
   });

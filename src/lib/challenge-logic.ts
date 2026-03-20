@@ -166,9 +166,9 @@ export function detectSolveEvidence(level: number, aiResponse: string, expectedF
 
   if (level === 3) {
     const extracted = extractAfterPrefixes(aiResponse, [
-      "vault secret",
-      "segredo do cofre liberado",
       "vault secret entregue",
+      "segredo do cofre liberado",
+      "vault secret",
       "codigo sensivel",
       "artefato protegido retornado",
     ]);
