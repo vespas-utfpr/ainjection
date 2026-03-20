@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Trash2, Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Message {
   role: "user" | "assistant";
@@ -33,6 +34,16 @@ export function TerminalChat({ messages, isLoading, onSend, onClear, levelId }: 
     if (input.trim()) {
       onSend(input);
       setInput("");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim()) {
+        onSend(input);
+        setInput("");
+      }
     }
   };
 
@@ -90,13 +101,15 @@ export function TerminalChat({ messages, isLoading, onSend, onClear, levelId }: 
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="flex items-center border-t border-border p-2 gap-2">
-        <span className="text-terminal-cyan text-xs">$</span>
-        <input
+      <form onSubmit={handleSubmit} className="flex items-end border-t border-border p-2 gap-2">
+        <span className="text-terminal-cyan text-xs pb-2">$</span>
+        <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Envie uma mensagem..."
-          className="flex-1 bg-transparent text-foreground text-xs outline-none placeholder:text-muted-foreground"
+          rows={3}
+          className="min-h-[72px] flex-1 resize-none border-0 bg-transparent px-0 py-1 text-xs text-foreground outline-none ring-0 placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
           disabled={isLoading}
         />
         <button
