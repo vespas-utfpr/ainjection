@@ -4,7 +4,6 @@ import { Navbar } from "@/components/Navbar";
 import { TerminalChat } from "@/components/TerminalChat";
 import { FlagSubmit } from "@/components/FlagSubmit";
 import { useCTFChat } from "@/hooks/use-ctf-chat";
-import { useFlagValidation } from "@/hooks/use-flag-validation";
 import { LEVELS } from "@/lib/levels";
 import { AlertTriangle, Info, Target } from "lucide-react";
 
@@ -13,8 +12,11 @@ export default function LevelPage() {
   const levelId = Number(id);
   const level = LEVELS.find((l) => l.id === levelId);
 
-  const { messages, isLoading, sendMessage, clearMessages, latestSolveToken } = useCTFChat(levelId);
-  const { validateFlag, isValidating } = useFlagValidation();
+  const { messages, isLoading, sendMessage, clearMessages } = useCTFChat(levelId);
+  const latestFlag = [...messages]
+    .reverse()
+    .find((message) => message.role === "assistant" && /VESPAS\{[^}]+\}/.test(message.content))
+    ?.content.match(/VESPAS\{[^}]+\}/)?.[0] ?? null;
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -75,12 +77,10 @@ export default function LevelPage() {
           levelId={levelId}
         />
 
-        {/* Submissão de flag */}
+        {/* Cópia de flag para submissão no CTFd */}
         <FlagSubmit
           level={levelId}
-          onSubmit={(flag, currentLevel, playerName) =>
-            validateFlag(flag, currentLevel, playerName, latestSolveToken)}
-          isValidating={isValidating}
+          latestFlag={latestFlag}
         />
 
         <div className="border border-border rounded p-4 bg-card space-y-2">
